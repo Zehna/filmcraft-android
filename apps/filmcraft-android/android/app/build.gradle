@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.taras.filmcraft"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "0.20.1"
+    }
+
+    sourceSets {
+        main {
+            // cargo-ndk output directory (`cargo ndk -t arm64-v8a -o jniLibs build -p filmcraft-android`).
+            jniLibs.srcDirs = ['../../jniLibs']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = false
+            // Debug signing for local testing, so a release APK installs with `adb install`
+            // without a release keystore. A real release needs its own signing config.
+            signingConfig = signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            ndk {
+                abiFilters 'arm64-v8a'
+            }
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    namespace = 'com.taras.filmcraft'
+}
+
+dependencies {
+    // GameActivity: the Java activity the Rust `android_main` runs under.
+    implementation "androidx.games:games-activity:4.4.0"
+}

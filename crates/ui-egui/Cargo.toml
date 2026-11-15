@@ -29,7 +29,16 @@ filmcraft-gpu = { workspace = true }
 filmcraft-scopes = { workspace = true }
 egui = { workspace = true }
 egui_extras = { workspace = true }
+# `accesskit` is desktop-only: eframe's fork refuses `accesskit` +
+# `android-native-activity` (see eframe/src/lib.rs — the accesskit_winit backend
+# only supports the GameActivity backend), and Android has its own accessibility
+# stack. The egui `accesskit` types used by the UI code are unconditional in egui
+# itself, so the node-builder calls still compile; they just build a tree nobody
+# consumes on Android.
+[target.'cfg(not(target_os = "android"))'.dependencies]
 eframe = { workspace = true, features = ["default_fonts", "wgpu", "accesskit", "clipboard"] }
+[target.'cfg(target_os = "android")'.dependencies]
+eframe = { workspace = true, features = ["default_fonts", "wgpu", "clipboard"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }

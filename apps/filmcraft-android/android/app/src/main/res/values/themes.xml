@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M1 minimal theme: framework theme only, no AppCompat dependency. -->
+<resources>
+    <style name="ActivityTheme" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/activity_background</item>
+    </style>
+</resources>

@@ -2,6 +2,7 @@
 plan/
 /target
 /crates/*/target/
+/apps/filmcraft-android/jniLibs/
 /dist
 /log
 .DS_Store

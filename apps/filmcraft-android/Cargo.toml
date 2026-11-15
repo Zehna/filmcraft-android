@@ -1,0 +1,75 @@
+[package]
+name = "filmcraft-android"
+description = "FilmCraft on Android (M1 minimal shell): eframe + wgpu on GameActivity, reusing the desktop engine and egui UI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+# The workspace lints, except that `unsafe_code` is `deny` instead of `forbid`: only the
+# Android entry point opts in with `#[allow(unsafe_code)]` (same pattern as
+# `crates/platform`, which needs `unsafe` for OS media APIs). Cargo forbids overriding
+# `workspace.lints` in the same table, so this crate spells its lints out instead of
+# inheriting them.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+cognitive_complexity = "deny"
+too_many_arguments = "deny"
+wildcard_imports = "deny"
+dbg_macro = "warn"
+todo = "warn"
+needless_range_loop = "allow"
+type_complexity = "allow"
+undocumented_unsafe_blocks = "deny"
+
+[lib]
+# GameActivity loads this library through the manifest's `android.app.lib_name` meta-data.
+name = "main"
+crate-type = ["cdylib"]
+
+[target.'cfg(target_os = "android")'.dependencies]
+filmcraft-engine = { workspace = true }
+filmcraft-ui-egui = { workspace = true }
+filmcraft-platform = { workspace = true }
+egui = { workspace = true }
+serde_json = { workspace = true }
+# eframe's `wgpu` feature enables wgpu's default backends (vulkan, gles, ...). The direct wgpu
+# dependency below makes the M1 requirement explicit and also switches on the backends for
+# `filmcraft-gpu`'s own instance (feature unification): without a backend its export renderer
+# would find no adapter (Fase 0 finding 2).
+wgpu = { version = "30", default-features = false, features = ["wgsl", "vulkan", "gles"] }
+eframe = { workspace = true, default-features = false, features = ["default_fonts", "wgpu", "android-game-activity"] }
+winit = { version = "0.30", default-features = false }
+log = { workspace = true }
+# logcat output (MIT OR Apache-2.0).
+android_logger = "0.15"
+
+# cargo-apk2 packaging metadata. The manifest is generated from this table
+# (ndk-build2 `AndroidManifest`); see android/README-M1.md for the full packaging flow.
+[package.metadata.android]
+package = "com.taras.filmcraft"
+build_targets = ["aarch64-linux-android"]
+resources = "android/app/src/main/res"
+# java_sources is intentionally NOT declared: MainActivity extends GameActivity, whose class
+# lives in the games-activity AAR and is not on cargo-apk2's javac classpath (android.jar
+# only). The Java side is pre-compiled into target/<profile>/apk/classes (see
+# android/README-M1.md); cargo-apk2 dexes whatever is in that directory.
+[package.metadata.android.sdk]
+min_sdk_version = 26
+target_sdk_version = 35
+[package.metadata.android.application]
+label = "FilmCraft"
+icon = "@drawable/ic_launcher"
+theme = "@style/ActivityTheme"
+[[package.metadata.android.application.activity]]
+name = "com.taras.filmcraft.MainActivity"
+config_changes = "orientation|screenSize|screenLayout|keyboardHidden"
+exported = true
+[[package.metadata.android.application.activity.intent_filter]]
+actions = ["android.intent.action.MAIN"]
+categories = ["android.intent.category.LAUNCHER"]
+[[package.metadata.android.application.activity.meta_data]]
+name = "android.app.lib_name"
+value = "main"

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FilmCraft on Android (M1): Gradle build manifest. cargo-apk2 generates its own manifest
+     from [package.metadata.android] in Cargo.toml; this file is the Gradle equivalent.
+     Provisional identity (NOT final): package com.taras.filmcraft, working label "FilmCraft". -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="FilmCraft"
+        android:supportsRtl="true"
+        android:theme="@style/ActivityTheme">
+        <activity
+            android:name="com.taras.filmcraft.MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <meta-data android:name="android.app.lib_name" android:value="main" />
+        </activity>
+    </application>
+
+</manifest>
