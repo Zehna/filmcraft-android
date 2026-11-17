@@ -45,4 +45,7 @@ android {
 dependencies {
     // GameActivity: the Java activity the Rust `android_main` runs under.
     implementation "androidx.games:games-activity:4.4.0"
+    // GameActivity references androidx.core classes (e.g. OnApplyWindowInsetsListener),
+    // but games-activity 4.4.0 declares no transitive dependencies in its POM.
+    implementation "androidx.core:core:1.13.0"
 }
