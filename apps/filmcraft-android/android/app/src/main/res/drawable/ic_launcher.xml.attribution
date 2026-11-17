@@ -1,8 +1,0 @@
-asset:        ic_launcher.xml
-title:        FilmCraft Android launcher icon (placeholder)
-author:       FilmCraft contributors
-source:       original work — drawn from scratch (purple rounded square, white play triangle)
-license:      MIT OR Apache-2.0
-license-file: LICENSE-MIT
-added:        2026-11-15 by Benny Wira Sanjaya
-notes:        Temporary placeholder for the M1 Android shell; the final brand icon is still undecided. Follows the generic play-triangle convention only.
