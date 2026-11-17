@@ -48,4 +48,6 @@ dependencies {
     // GameActivity references androidx.core classes (e.g. OnApplyWindowInsetsListener),
     // but games-activity 4.4.0 declares no transitive dependencies in its POM.
     implementation "androidx.core:core:1.13.0"
+    // GameActivity extends AppCompatActivity; same missing-transitive-deps story.
+    implementation "androidx.appcompat:appcompat:1.7.0"
 }
