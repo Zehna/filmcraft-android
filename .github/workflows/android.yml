@@ -1,0 +1,94 @@
+name: Android (M1)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "apps/filmcraft-android/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+    tags:
+      - "v0.20.1-android-m1"
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Set up Android SDK (runner preinstalled)
+        run: |
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
+      - name: Install NDK r28
+        run: sdkmanager "ndk;28.2.13676358" "platforms;android-35" "build-tools;35.0.0"
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --version 4.1.2 --locked
+      - name: Build native library (release)
+        run: |
+          export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/28.2.13676358"
+          cargo ndk -t arm64-v8a -o apps/filmcraft-android/jniLibs build --release -p filmcraft-android
+      - name: Set up Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.3.1"
+      - name: Build APK with Gradle
+        working-directory: apps/filmcraft-android/android
+        run: gradle assembleRelease
+      - name: Verify APK
+        run: |
+          APK=apps/filmcraft-android/android/app/build/outputs/apk/release/app-release.apk
+          ls -l "$APK" && sha256sum "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt2" dump badging "$APK" | head -8
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$APK" | head -5
+      - name: Record APK facts
+        id: apkfacts
+        run: |
+          APK=apps/filmcraft-android/android/app/build/outputs/apk/release/app-release.apk
+          echo "size=$(stat -c%s "$APK")" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(sha256sum "$APK" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: filmcraft-android-apk
+          path: apps/filmcraft-android/android/app/build/outputs/apk/release/app-release.apk
+      - name: Publish GitHub release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: true
+          files: apps/filmcraft-android/android/app/build/outputs/apk/release/app-release.apk
+          body: |
+            # FilmCraft Android M1 — pre-release (CI build)
+
+            APK Android pertama FilmCraft dari fork Zehna/filmcraft-android: crate baru apps/filmcraft-android (cdylib, android_main), reuse Session/FilmcraftApp upstream. Engine headless FilmCraft (Rust murni, codec H.264/HEVC/ProRes/AAC sendiri) + UI egui lengkap, wgpu Vulkan dengan fallback GLES. Demo project dibuka otomatis saat startup.
+
+            ## Artefak (hasil CI, GameActivity)
+
+            - Ukuran: ${{ steps.apkfacts.outputs.size }} byte
+            - SHA256: ${{ steps.apkfacts.outputs.sha256 }}
+            - Package: com.taras.filmcraft (identitas kerja sementara — BUKAN merek final)
+            - versionName 0.20.1, minSdk 26, targetSdk 35, label FilmCraft
+            - Launchable activity: GameActivity (com.taras.filmcraft.MainActivity)
+
+            ## Jujur soal batasnya
+
+            - Pre-release, belum pernah dibuka di HP. Gate HP (install, UI tampil, demo ke-load, tanpa crash) masih menunggu. Jangan jadikan ini rilis stabil.
+            - Belum ada: SAF import/save, keyboard virtual, layout khusus HP, audio playback, MediaCodec (decode software saja), export.
+            - Merek final belum diputuskan; nama/logo ArtCraft wajib dilepas dari fork sebelum rilis stabil.
+
+            ## Cara tes (gate HP)
+
+            1. adb install -r <apk> (hapus dulu com.taras.filmcraft lama bila tanda tangan berubah).
+            2. Buka aplikasi. Harapan: UI FilmCraft tampil (menu, panel Project, timeline); logcat menunjukkan filmcraft-android: android_main entered dan filmcraft-android: demo project opened, tanpa crash AndroidRuntime.
