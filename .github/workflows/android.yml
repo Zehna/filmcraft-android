@@ -8,8 +8,9 @@ on:
       - "crates/**"
       - "Cargo.toml"
       - "Cargo.lock"
+      - ".github/workflows/android.yml"
     tags:
-      - "v0.20.1-android-m1"
+      - "v0.20.1-android-m1*"
 
 permissions:
   contents: write
@@ -70,9 +71,9 @@ jobs:
           prerelease: true
           files: apps/filmcraft-android/android/app/build/outputs/apk/release/app-release.apk
           body: |
-            # FilmCraft Android M1 — pre-release (CI build)
+            # FilmCraft Android M1.1 — pre-release (CI build)
 
-            APK Android pertama FilmCraft dari fork Zehna/filmcraft-android: crate baru apps/filmcraft-android (cdylib, android_main), reuse Session/FilmcraftApp upstream. Engine headless FilmCraft (Rust murni, codec H.264/HEVC/ProRes/AAC sendiri) + UI egui lengkap, wgpu Vulkan dengan fallback GLES. Demo project dibuka otomatis saat startup.
+            Perbaikan M1.1 atas force close M1: backend wgpu dipaksa GLES saja (sebelumnya Vulkan dulu — tersangka utama crash di Mali-G57, belum terbukti tanpa logcat), error startup kini disimpan ke <data>/Logs/startup-error.log, plus tes regresi. Engine headless FilmCraft (Rust murni, codec H.264/HEVC/ProRes/AAC sendiri) + UI egui lengkap, crate apps/filmcraft-android (cdylib, android_main), reuse Session/FilmcraftApp upstream. Demo project dibuka otomatis saat startup.
 
             ## Artefak (hasil CI, GameActivity)
 
